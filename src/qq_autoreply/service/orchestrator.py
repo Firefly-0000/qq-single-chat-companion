@@ -12,6 +12,7 @@ from ..domain import (
     EventStatus,
     MessageEvent,
     QQWindowInfo,
+    SendDeferredError,
     TickResult,
 )
 from ..ports import DetectorPort, ReplyGeneratorPort, ReplySenderPort
@@ -36,6 +37,8 @@ class Orchestrator:
         self.state = BotState.UNBOUND
         self._pending_events: list[MessageEvent] = []
         self._batch_deadline: float | None = None
+        self._deferred_reply: str | None = None
+        self._deferred_events: list[MessageEvent] = []
 
     def bind(self, window: QQWindowInfo) -> None:
         self.detector.bind(window)
@@ -54,11 +57,16 @@ class Orchestrator:
 
     def emergency_stop(self) -> None:
         self.settings.auto_send = False
+        self._deferred_reply = None
+        self._deferred_events = []
         self.state = BotState.STOPPED
 
     def tick(self) -> TickResult:
         if self.state != BotState.MONITORING:
             return TickResult(state=self.state, kind=EventKind.NONE)
+
+        if self._deferred_reply is not None:
+            return self._retry_deferred_send()
 
         if (
             self._pending_events
@@ -209,6 +217,18 @@ class Orchestrator:
         self.state = BotState.SENDING
         try:
             self.sender.send(reply)
+        except SendDeferredError as exc:
+            self._deferred_reply = reply
+            self._deferred_events = list(events)
+            self.state = BotState.MONITORING
+            return TickResult(
+                state=self.state,
+                kind=EventKind.PEER_TEXT,
+                event=event,
+                reply=reply,
+                message=str(exc),
+                context=self.storage.recent_messages(self.settings.context_recent_messages),
+            )
         except Exception as exc:
             self.state = BotState.PAUSED
             for pending in events:
@@ -234,6 +254,48 @@ class Orchestrator:
             event=event,
             reply=reply,
             message="reply sent",
+            context=self.storage.recent_messages(self.settings.context_recent_messages),
+        )
+
+    def _retry_deferred_send(self) -> TickResult:
+        if self._deferred_reply is None:
+            return TickResult(state=self.state, kind=EventKind.NONE)
+        try:
+            self.sender.send(self._deferred_reply)
+        except SendDeferredError as exc:
+            return TickResult(
+                state=self.state,
+                kind=EventKind.NONE,
+                message=str(exc),
+                context=self.storage.recent_messages(self.settings.context_recent_messages),
+            )
+        except Exception as exc:
+            self.state = BotState.PAUSED
+            for event in self._deferred_events:
+                self.storage.update_event_status(
+                    event.event_id,
+                    EventStatus.SEND_UNCERTAIN,
+                )
+            self._deferred_reply = None
+            self._deferred_events = []
+            return TickResult(
+                state=self.state,
+                kind=EventKind.ERROR,
+                message=f"deferred send failed: {exc}",
+                context=self.storage.recent_messages(self.settings.context_recent_messages),
+            )
+
+        for event in self._deferred_events:
+            self.storage.update_event_status(event.event_id, EventStatus.SENT)
+        reply = self._deferred_reply
+        self._deferred_reply = None
+        self._deferred_events = []
+        self.state = BotState.MONITORING
+        return TickResult(
+            state=self.state,
+            kind=EventKind.PEER_TEXT,
+            reply=reply,
+            message="deferred reply sent",
             context=self.storage.recent_messages(self.settings.context_recent_messages),
         )
 

@@ -5,7 +5,7 @@ import time
 import warnings
 
 from ..config import AppSettings
-from ..domain import WindowRect
+from ..domain import SendDeferredError, WindowRect
 from ..vision.capture import MssCapture
 from ..vision.detector import MessageDetector, normalize_text
 from ..vision.ocr import RapidOcrEngine
@@ -30,16 +30,43 @@ class UIAutomationError(SendError):
     pass
 
 
-def _select_edit_control(controls: list[object]) -> object:
+def _get_clipboard_text() -> str:
+    import win32clipboard
+
+    win32clipboard.OpenClipboard()
+    try:
+        if win32clipboard.IsClipboardFormatAvailable(
+            win32clipboard.CF_UNICODETEXT
+        ):
+            return str(win32clipboard.GetClipboardData(win32clipboard.CF_UNICODETEXT))
+        return ""
+    finally:
+        win32clipboard.CloseClipboard()
+
+
+def _set_clipboard_text(text: str) -> None:
+    import win32clipboard
+
+    win32clipboard.OpenClipboard()
+    try:
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardData(win32clipboard.CF_UNICODETEXT, text)
+    finally:
+        win32clipboard.CloseClipboard()
+
+
+def _select_chat_input(controls: list[object]) -> object:
     candidates = [
         control
         for control in controls
-        if getattr(control.element_info, "control_type", "") == "Edit"
+        if getattr(control.element_info, "control_type", "") in {"Group", "Edit"}
+        and "ExEditor-qq-msg-editor"
+        in str(getattr(control.element_info, "class_name", ""))
         and control.is_visible()
         and control.is_enabled()
     ]
     if not candidates:
-        raise UIAutomationError("QQ input Edit control was not found")
+        raise UIAutomationError("QQ chat input control was not found")
     return max(candidates, key=lambda control: control.rectangle().width())
 
 
@@ -83,36 +110,63 @@ class DesktopReplySender:
         if validation is not None:
             raise SendError(validation.reason or "Target validation failed")
 
-        layout = self.detector.layout
         try:
-            self._send_via_uia(text)
+            self._send_via_foreground(text)
         except SendError:
             raise
         except Exception as exc:
-            raise UIAutomationError(f"UI Automation send failed: {exc}") from exc
+            raise UIAutomationError(f"QQ input send failed: {exc}") from exc
 
-        if not self._verify_sent(text, layout.messages):
+        if not self._verify_sent(text, self.detector.layout.messages):
             raise SendUncertainError("Could not confirm outgoing message")
 
-    def _send_via_uia(self, text: str) -> None:
+    def _send_via_foreground(self, text: str) -> None:
         if self.detector.window is None:
             raise UIAutomationError("No bound QQ window")
+        idle_seconds = self.window_provider.idle_seconds()
+        if idle_seconds < self.settings.focus_guard_idle_seconds:
+            raise SendDeferredError(
+                f"user input active ({idle_seconds:.2f}s idle); send deferred"
+            )
+
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=SyntaxWarning, module="pywinauto")
-            from pywinauto import Desktop
+            from pywinauto import Desktop, keyboard
 
         window = Desktop(backend="uia").window(handle=self.detector.window.handle)
         controls = list(window.descendants())
-        edit = _select_edit_control(controls)
-        edit.iface_value.SetValue(text)
-        observed = str(edit.iface_value.CurrentValue)
-        if normalize_text(observed) != normalize_text(text):
-            raise InputVerificationError("UI Automation input verification failed")
+        chat_input = _select_chat_input(controls)
+        previous_foreground = self.window_provider.foreground_handle()
+        previous_clipboard = _get_clipboard_text()
+        try:
+            self.window_provider.focus(self.detector.window.handle)
+            chat_input.set_focus()
+            _set_clipboard_text(text)
+            keyboard.send_keys("^a")
+            keyboard.send_keys("^v")
+            time.sleep(0.2)
 
-        controls = list(window.descendants())
-        send_button = _select_send_button(controls)
-        send_button.iface_invoke.Invoke()
-        time.sleep(0.2)
+            input_frame = self.capture.capture(self.detector.layout.input)
+            observed = normalize_text(
+                " ".join(line.text for line in self.ocr.recognize(input_frame))
+            )
+            if normalize_text(text) not in observed:
+                raise InputVerificationError("Chat input verification failed")
+
+            controls = list(window.descendants())
+            send_button = _select_send_button(controls)
+            send_button.iface_invoke.Invoke()
+            time.sleep(0.2)
+        finally:
+            try:
+                _set_clipboard_text(previous_clipboard)
+            except Exception:
+                logger.debug("Clipboard restore failed", exc_info=True)
+            if previous_foreground != self.detector.window.handle:
+                try:
+                    self.window_provider.focus(previous_foreground)
+                except Exception:
+                    logger.debug("Foreground restore failed", exc_info=True)
 
     def _verify_sent(self, text: str, message_rect: WindowRect) -> bool:
         expected = normalize_text(text)

@@ -11,6 +11,7 @@ from qq_autoreply.domain import (
     EventKind,
     MessageEvent,
     QQWindowInfo,
+    SendDeferredError,
     WindowRect,
 )
 from qq_autoreply.service.orchestrator import Orchestrator
@@ -37,6 +38,18 @@ class FakeGenerator:
     def generate(self, messages: object) -> str:
         self.calls += 1
         return self.reply
+
+
+class DeferredSender:
+    def __init__(self) -> None:
+        self.calls = 0
+        self.sent: list[str] = []
+
+    def send(self, text: str) -> None:
+        self.calls += 1
+        if self.calls == 1:
+            raise SendDeferredError("user is typing")
+        self.sent.append(text)
 
 
 def event(
@@ -206,3 +219,36 @@ def test_100_round_soak_simulation(tmp_path: Path) -> None:
     assert generator.calls == 100
     assert sender.sent == ["收到"] * 100
     assert len(storage.recent_messages(500)) == 200
+
+
+def test_send_is_deferred_until_next_tick_when_user_is_active(tmp_path: Path) -> None:
+    settings = AppSettings(
+        target_user_name="张三",
+        auto_send=True,
+        batch_window_ms=0,
+    )
+    storage = Storage(tmp_path / "state.sqlite3")
+    detector = FakeDetector(
+        DetectionResult(kind=EventKind.PEER_TEXT, event=event())
+    )
+    generator = FakeGenerator("稍后发送")
+    sender = DeferredSender()
+    orchestrator = Orchestrator(
+        settings=settings,
+        storage=storage,
+        detector=detector,
+        generator=generator,
+        sender=sender,
+    )
+    orchestrator.bind(
+        QQWindowInfo(handle=1, title="QQ", rect=WindowRect(0, 0, 1200, 800))
+    )
+    orchestrator.start()
+
+    deferred = orchestrator.tick()
+    completed = orchestrator.tick()
+
+    assert deferred.message == "user is typing"
+    assert completed.message == "deferred reply sent"
+    assert sender.sent == ["稍后发送"]
+    assert generator.calls == 1

@@ -4,7 +4,7 @@ import pytest
 
 from qq_autoreply.automation.input import (
     UIAutomationError,
-    _select_edit_control,
+    _select_chat_input,
     _select_send_button,
 )
 
@@ -48,16 +48,20 @@ class _Control:
         return _Rect(self._width)
 
 
-def test_select_edit_control_prefers_largest_visible_edit() -> None:
-    expected = _Control("Edit", width=300)
+def test_select_chat_input_uses_prosemirror_editor() -> None:
+    expected = _Control(
+        "Group",
+        class_name="ProseMirror ExEditor-qq-msg-editor is-empty",
+        width=300,
+    )
     controls = [
         _Control("Button"),
-        _Control("Edit", width=50),
+        _Control("Edit", class_name="search-input", width=50),
         expected,
-        _Control("Edit", width=500, visible=False),
+        _Control("Group", class_name="ExEditor-qq-msg-editor", width=500, visible=False),
     ]
 
-    assert _select_edit_control(controls) is expected
+    assert _select_chat_input(controls) is expected
 
 
 def test_select_send_button_uses_send_class() -> None:
@@ -69,6 +73,6 @@ def test_select_send_button_uses_send_class() -> None:
 
 def test_missing_uia_controls_raise() -> None:
     with pytest.raises(UIAutomationError):
-        _select_edit_control([])
+        _select_chat_input([])
     with pytest.raises(UIAutomationError):
         _select_send_button([])

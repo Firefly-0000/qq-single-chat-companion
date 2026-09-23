@@ -137,6 +137,15 @@ class Win32WindowProvider:
 
         return win32gui.GetForegroundWindow()
 
+    def idle_seconds(self) -> float:
+        if sys.platform != "win32":
+            return 0.0
+
+        import win32api
+
+        elapsed_ms = win32api.GetTickCount() - win32api.GetLastInputInfo()
+        return max(0.0, elapsed_ms / 1000.0)
+
 
 class FakeWindowProvider:
     def __init__(self, windows: list[QQWindowInfo]) -> None:

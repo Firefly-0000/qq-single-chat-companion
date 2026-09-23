@@ -15,6 +15,10 @@ class BotState(StrEnum):
     STOPPED = "STOPPED"
 
 
+class SendDeferredError(RuntimeError):
+    """Raised when sending must wait for the user to stop typing."""
+
+
 class EventKind(StrEnum):
     NONE = "none"
     PEER_TEXT = "peer_text"

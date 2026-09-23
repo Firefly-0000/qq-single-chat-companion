@@ -35,6 +35,7 @@ class AppSettings(BaseModel):
     batch_window_ms: int = Field(default=3_000, ge=0, le=30_000)
     frame_change_threshold: float = Field(default=0.003, ge=0.0001, le=0.25)
     ocr_min_confidence: float = Field(default=0.55, ge=0.0, le=1.0)
+    focus_guard_idle_seconds: float = Field(default=1.2, ge=0.0, le=10.0)
     auto_start: bool = False
     auto_send: bool = False
     persona: PersonaSettings = Field(default_factory=PersonaSettings)
