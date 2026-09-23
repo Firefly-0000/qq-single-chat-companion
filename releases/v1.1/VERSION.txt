@@ -1,0 +1,4 @@
+QQ Auto Reply
+Release label: V1.1
+Behavior: Windows UI Automation writes to the QQ input control and invokes Send
+without stealing foreground focus.

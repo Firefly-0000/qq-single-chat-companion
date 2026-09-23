@@ -1,0 +1,314 @@
+version: 2
+project: single-private-chat-companion-ui-automation
+request: null
+mode: full
+scope_capabilities: []
+created_at: "2026-09-23T13:35:48Z"
+revision: 1
+lineage:
+  extends: null
+  inherited_group_ids: []
+
+filters:
+  languages: [python]
+  recency: active within 24 months unless stable/complete
+  popularity_floor: none
+
+sources:
+  active: [github]
+  skipped:
+    - id: gitee
+      reason: "caller explicitly asked for GitHub discovery in this pass; CJK footnotes remain a later cross-check"
+    - id: gitlab
+      reason: "GitHub-only discovery requested for this first module survey"
+    - id: codeberg
+      reason: "GitHub-only discovery requested for this first module survey"
+    - id: bitbucket
+      reason: "GitHub-only discovery requested for this first module survey"
+    - id: sourceforge
+      reason: "GitHub-only discovery requested for this first module survey"
+    - id: sourcehut
+      reason: "GitHub-only discovery requested for this first module survey"
+    - id: software-heritage
+      reason: "dead-project recovery is not needed for the first module survey"
+
+seeds:
+  - repo: TomSchimansky/CustomTkinter
+    host: github
+    why: established Python desktop GUI library for the control panel
+  - repo: pywinauto/pywinauto
+    host: github
+    why: established Windows GUI automation library for QQ window anchoring
+  - repo: asweigart/pyautogui
+    host: github
+    why: established mouse, keyboard, and screenshot automation library
+  - repo: BoboTiG/python-mss
+    host: github
+    why: focused high-speed screen capture library
+  - repo: RapidAI/RapidOCR
+    host: github
+    why: focused deployable OCR toolkit suited to local Chinese text recognition
+  - repo: cluic/wxauto
+    host: github
+    why: closest established desktop-chat UI automation analog, although for WeChat
+  - repo: openai/openai-python
+    host: github
+    why: official compatible client for DeepSeek's OpenAI-format API
+
+probe:
+  performed: true
+  reason: null
+  sources:
+    - GitHub topics on TomSchimansky/CustomTkinter
+    - GitHub topics on pywinauto/pywinauto
+    - GitHub topics on RapidAI/RapidOCR
+  discoveries:
+    - desktop-automation
+    - ui-automation
+    - computer-vision
+    - ocr
+    - python-gui
+    - desktop-chatbot
+
+groups:
+  - id: kw-dom-desktop-private-chat
+    type: domain
+    capability: null
+    canonical: desktop private chat auto reply
+    negative_terms: [group chat, discord, slack, telegram]
+    expansions:
+      - term: single conversation chatbot
+        provenance: extracted
+        relation: synonym
+      - term: QQ private chat auto reply
+        provenance: extracted
+        relation: narrower
+      - term: desktop chat automation
+        provenance: model-knowledge
+        relation: broader
+      - term: screen-based chat bot
+        provenance: model-knowledge
+        relation: related
+  - id: kw-cap-gui
+    type: capability
+    capability: gui
+    canonical: Python desktop GUI
+    negative_terms: [web ui, terminal ui, mobile app]
+    expansions:
+      - term: PySide6
+        provenance: model-knowledge
+        relation: narrower
+      - term: PyQt
+        provenance: model-knowledge
+        relation: narrower
+      - term: CustomTkinter
+        provenance: probe-discovered
+        relation: narrower
+      - term: Tkinter
+        provenance: model-knowledge
+        relation: broader
+  - id: kw-cap-window-automation
+    type: capability
+    capability: windows-ui-automation
+    canonical: Windows GUI automation
+    negative_terms: [browser automation, selenium, playwright web]
+    expansions:
+      - term: pywinauto
+        provenance: probe-discovered
+        relation: narrower
+      - term: pyautogui
+        provenance: probe-discovered
+        relation: narrower
+      - term: Microsoft UI Automation
+        provenance: model-knowledge
+        relation: related
+      - term: Win32 desktop automation
+        provenance: model-knowledge
+        relation: related
+  - id: kw-cap-screen-capture
+    type: capability
+    capability: screen-capture
+    canonical: Python screen capture
+    negative_terms: [screen recorder, video capture, game streaming]
+    expansions:
+      - term: python-mss
+        provenance: model-knowledge
+        relation: narrower
+      - term: window screenshot
+        provenance: model-knowledge
+        relation: narrower
+      - term: desktop screenshot library
+        provenance: model-knowledge
+        relation: synonym
+      - term: screen scraping
+        provenance: model-knowledge
+        relation: related
+  - id: kw-cap-ocr
+    type: capability
+    capability: ocr
+    canonical: Chinese OCR
+    negative_terms: [handwriting OCR, document OCR only]
+    expansions:
+      - term: RapidOCR
+        provenance: probe-discovered
+        relation: narrower
+      - term: PaddleOCR
+        provenance: model-knowledge
+        relation: narrower
+      - term: EasyOCR
+        provenance: model-knowledge
+        relation: related
+      - term: text recognition
+        provenance: model-knowledge
+        relation: broader
+  - id: kw-cap-message-detection
+    type: capability
+    capability: message-detection
+    canonical: chat message detection
+    negative_terms: [email notification, SMS, group chat]
+    expansions:
+      - term: unread badge detection
+        provenance: model-knowledge
+        relation: narrower
+      - term: image diff detection
+        provenance: model-knowledge
+        relation: related
+      - term: screen change detection
+        provenance: model-knowledge
+        relation: broader
+      - term: chat OCR monitoring
+        provenance: model-knowledge
+        relation: related
+  - id: kw-cap-input-automation
+    type: capability
+    capability: input-automation
+    canonical: keyboard input automation
+    negative_terms: [game cheat, keylogger]
+    expansions:
+      - term: pyperclip
+        provenance: model-knowledge
+        relation: narrower
+      - term: clipboard paste
+        provenance: model-knowledge
+        relation: related
+      - term: pyautogui keyboard
+        provenance: probe-discovered
+        relation: narrower
+      - term: pydirectinput
+        provenance: probe-discovered
+        relation: related
+  - id: kw-cap-context-memory
+    type: capability
+    capability: context-memory
+    canonical: conversation memory for LLM
+    negative_terms: [RAM, CPU cache, database cache]
+    expansions:
+      - term: long-term memory
+        provenance: model-knowledge
+        relation: synonym
+      - term: chat history memory
+        provenance: extracted
+        relation: narrower
+      - term: conversation summarization
+        provenance: model-knowledge
+        relation: related
+      - term: agent memory
+        provenance: model-knowledge
+        relation: broader
+  - id: kw-cap-companion-chat
+    type: capability
+    capability: companion-chat
+    canonical: AI companion chatbot
+    negative_terms: [customer support, therapy, medical diagnosis]
+    expansions:
+      - term: roleplay chatbot
+        provenance: model-knowledge
+        relation: related
+      - term: emotional companion
+        provenance: extracted
+        relation: synonym
+      - term: persona chat
+        provenance: model-knowledge
+        relation: narrower
+      - term: memory chatbot
+        provenance: model-knowledge
+        relation: related
+  - id: kw-anchor-deepseek-api
+    type: ecosystem_anchor
+    capability: null
+    canonical: DeepSeek API
+    negative_terms: [local model, Ollama, model training]
+    expansions:
+      - term: deepseek-flash
+        provenance: extracted
+        relation: narrower
+      - term: deepseek-v4-pro
+        provenance: extracted
+        relation: narrower
+      - term: OpenAI-compatible API
+        provenance: extracted
+        relation: broader
+      - term: OpenAI Python SDK
+        provenance: model-knowledge
+        relation: related
+  - id: kw-tech-ui-recognition
+    type: technique
+    capability: null
+    canonical: UI recognition automation
+    negative_terms: [web scraping, browser automation, OCR document extraction]
+    expansions:
+      - term: OCR desktop automation
+        provenance: model-knowledge
+        relation: synonym
+      - term: template matching
+        provenance: model-knowledge
+        relation: related
+      - term: computer vision RPA
+        provenance: model-knowledge
+        relation: broader
+      - term: image-based automation
+        provenance: model-knowledge
+        relation: related
+  - id: kw-comp-qq-ui-auto-reply
+    type: competitor
+    capability: null
+    canonical: QQ UI auto reply
+    negative_terms: [OneBot, NapCat, protocol bot, group chat]
+    expansions:
+      - term: QQ auto reply
+        provenance: extracted
+        relation: synonym
+      - term: QQ AI auto reply
+        provenance: probe-discovered
+        relation: narrower
+      - term: desktop window auto reply
+        provenance: probe-discovered
+        relation: related
+      - term: WeChat auto reply
+        provenance: probe-discovered
+        relation: related
+  - id: kw-comm-desktop-automation
+    type: community
+    capability: null
+    canonical: GitHub topic desktop-automation
+    negative_terms: []
+    expansions:
+      - term: GitHub topic ui-automation
+        provenance: probe-discovered
+        relation: related
+      - term: GitHub topic computer-vision
+        provenance: probe-discovered
+        relation: related
+      - term: GitHub topic python-gui
+        provenance: probe-discovered
+        relation: related
+
+excluded:
+  - term: QQ protocol bot
+    reason: explicitly rejected because the design must not touch QQ protocols or internal data
+  - term: emoji recognition
+    reason: out of scope; only message-event detection is required
+  - term: group chat automation
+    reason: the product is scoped to one private conversation
+  - term: web frontend
+    reason: the requested frontend is a desktop GUI, not a browser application

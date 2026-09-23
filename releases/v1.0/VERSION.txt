@@ -1,0 +1,4 @@
+QQ Auto Reply
+Release label: V1.0
+Behavior: foreground focus + clipboard input.
+Status: archived because focus could be stolen while the user typed elsewhere.

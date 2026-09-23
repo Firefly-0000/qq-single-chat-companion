@@ -1,0 +1,342 @@
+version: 2
+meta:
+  project: single-private-chat-companion-ui-automation
+  request: null
+  angle_id: a1
+  searched_at: "2026-09-23T13:35:48Z"
+  keyword_map_revision: 1
+
+coverage:
+  - group_id: kw-dom-desktop-private-chat
+    source: github
+    queries:
+      - "qq auto reply in:name,description language:python"
+      - "wechat auto reply screen ocr language:python in:name,description"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 10
+  - group_id: kw-cap-gui
+    source: github
+    queries:
+      - "pyside6 OR customtkinter OR tkinter desktop gui language:python in:name,description"
+      - "pyside6 official in:name,description language:python"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 15
+  - group_id: kw-cap-window-automation
+    source: github
+    queries:
+      - "pywinauto OR pyautogui OR uiautomation windows automation language:python in:name,description"
+      - "pyautogui in:name,description language:python"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 18
+  - group_id: kw-cap-screen-capture
+    source: github
+    queries:
+      - "screen capture python mss OR screenshot windows language:python in:name,description"
+      - "mss screen capture python in:name,description"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 18
+  - group_id: kw-cap-ocr
+    source: github
+    queries:
+      - "RapidOCR OR PaddleOCR chinese ocr language:python in:name,description"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 10
+  - group_id: kw-cap-message-detection
+    source: github
+    queries:
+      - "chat window OCR new message detection language:python in:name,description"
+      - "OCR chat window auto reply desktop language:python"
+      - "chat screenshot monitor OCR bot in:name,description"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 0
+  - group_id: kw-cap-input-automation
+    source: github
+    queries:
+      - "pyperclip clipboard python in:name,description"
+      - "pyautogui in:name,description language:python"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 18
+  - group_id: kw-cap-context-memory
+    source: github
+    queries:
+      - "llm conversation memory in:name,description language:python"
+      - "long term memory chatbot roleplay language:python"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 20
+  - group_id: kw-cap-companion-chat
+    source: github
+    queries:
+      - "ai companion chatbot roleplay memory in:name,description"
+      - "long term memory chatbot roleplay language:python"
+      - "desktop chat OCR AI companion memory in:name,description"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 20
+  - group_id: kw-anchor-deepseek-api
+    source: github
+    queries:
+      - "deepseek api client in:name,description"
+      - "deepseek openai compatible python client"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 20
+  - group_id: kw-tech-ui-recognition
+    source: github
+    queries:
+      - "desktop rpa python ocr in:name,description"
+      - "desktop GUI automation OCR AI assistant language:python"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 0
+  - group_id: kw-comp-qq-ui-auto-reply
+    source: github
+    queries:
+      - "qq auto reply in:name,description language:python"
+      - "qq pyautogui in:name,description,readme language:python"
+      - "qq ocr screenshot in:name,description,readme language:python"
+      - "qq desktop automation in:name,description,readme language:python"
+    searched_at: "2026-09-23T13:35:48Z"
+    result_count: 40
+
+candidates:
+  - id: github__TomSchimansky__CustomTkinter
+    repo: https://github.com/TomSchimansky/CustomTkinter
+    host: github
+    name: CustomTkinter
+    description: "A modern and customizable python UI-library based on Tkinter"
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 13563, last_commit: "2026-06-24", license: MIT, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-gui], sources: [github] }
+    relevance: mature reusable GUI library for the target-user input, persona, context, and run-control screens
+  - id: github__pywinauto__pywinauto
+    repo: https://github.com/pywinauto/pywinauto
+    host: github
+    name: pywinauto
+    description: "Windows GUI Automation with Python (based on text properties)"
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 6179, last_commit: "2026-05-23", license: BSD-3-Clause, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-window-automation], sources: [github] }
+    relevance: reusable Windows window discovery and control layer for anchoring the single QQ conversation window
+  - id: github__asweigart__pyautogui
+    repo: https://github.com/asweigart/pyautogui
+    host: github
+    name: pyautogui
+    description: "A cross-platform GUI automation Python module for human beings. Used to programmatically control the mouse & keyboard."
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 12706, last_commit: "2024-08-20", license: BSD-3-Clause, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-window-automation, kw-cap-input-automation], sources: [github] }
+    relevance: reusable mouse and keyboard operation layer; stable but not recently updated
+  - id: github__learncodebygaming__pydirectinput
+    repo: https://github.com/learncodebygaming/pydirectinput
+    host: github
+    name: pydirectinput
+    description: "Python mouse and keyboard input automation for Windows using Direct Input."
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 586, last_commit: "2023-07-04", license: NOASSERTION, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-window-automation, kw-cap-input-automation], sources: [github] }
+    relevance: optional Windows input fallback when standard synthetic input is not accepted by a target control
+  - id: github__BoboTiG__python-mss
+    repo: https://github.com/BoboTiG/python-mss
+    host: github
+    name: python-mss
+    description: "An ultra fast cross-platform multiple screenshots module in pure Python using ctypes."
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 1281, last_commit: "2026-09-21", license: MIT, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-screen-capture], sources: [github] }
+    relevance: directly reusable high-speed capture layer for fixed QQ conversation regions
+  - id: github__RapidAI__RapidOCR
+    repo: https://github.com/RapidAI/RapidOCR
+    host: github
+    name: RapidOCR
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 7929, last_commit: "2026-09-23", license: Apache-2.0, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-ocr], sources: [github] }
+    relevance: strong local Chinese OCR candidate for private-chat text extraction with lightweight deployment
+  - id: github__PaddlePaddle__PaddleOCR
+    repo: https://github.com/PaddlePaddle/PaddleOCR
+    host: github
+    name: PaddleOCR
+    description: "Turn any PDF or image document into structured data for your AI. A powerful, lightweight OCR toolkit that bridges the gap between images/PDFs and LLMs. Supports 100+ languages."
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 90057, last_commit: "2026-09-16", license: Apache-2.0, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-ocr], sources: [github] }
+    relevance: highest-popularity OCR fallback; evaluate runtime weight and packaging cost before choosing over RapidOCR
+  - id: github__cluic__wxauto
+    repo: https://github.com/cluic/wxauto
+    host: github
+    name: wxauto
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 7329, last_commit: "2026-04-13", license: Apache-2.0, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-dom-desktop-private-chat], sources: [github] }
+    relevance: closest maintained desktop-chat UI automation analog; WeChat-specific, so use as architecture reference rather than direct QQ code
+  - id: github__mem0ai__mem0
+    repo: https://github.com/mem0ai/mem0
+    host: github
+    name: mem0
+    description: "The Memory Layer for AI Agents - Drop-in memory infrastructure for AI agents and apps. Context that persists. Built for production."
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 65853, last_commit: "2026-09-22", license: Apache-2.0, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-context-memory], sources: [github] }
+    relevance: reusable long-term memory layer, but SQLite recent-context storage may be sufficient for the first single-conversation version
+  - id: github__openai__openai-python
+    repo: https://github.com/openai/openai-python
+    host: github
+    name: openai-python
+    description: "The official Python library for the OpenAI API"
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 31681, last_commit: "2026-09-23", license: Apache-2.0, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-anchor-deepseek-api], sources: [github] }
+    relevance: compatible client path for DeepSeek's OpenAI-format API; no bespoke DeepSeek client is required
+  - id: github__SpicyTripe__qq-ai-auto-reply
+    repo: https://github.com/SpicyTripe/qq-ai-auto-reply
+    host: github
+    name: qq-ai-auto-reply
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 2, last_commit: "2026-06-09", license: null, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-comp-qq-ui-auto-reply, kw-dom-desktop-private-chat], sources: [github] }
+    relevance: description is the closest high-level product analog, but tiny size and no license make it unsuitable as a foundation
+  - id: github__Yauhak__LittleWhale-AutoReply
+    repo: https://github.com/Yauhak/LittleWhale-AutoReply
+    host: github
+    name: LittleWhale-AutoReply
+    description: "A multifunctional QQ Bot based on OneBot protocol"
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 4, last_commit: "2026-08-21", license: MIT, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-comp-qq-ui-auto-reply], sources: [github] }
+    relevance: QQ assistant reference, but OneBot violates the requirement not to touch QQ protocols
+  - id: github__GavinSure__qq_auto_reply
+    repo: https://github.com/GavinSure/qq_auto_reply
+    host: github
+    name: qq_auto_reply
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 1, last_commit: "2026-04-05", license: null, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-comp-qq-ui-auto-reply], sources: [github] }
+    relevance: low-signal candidate with no description or license; not recommended without a future deep review
+  - id: github__Caitao-oss__xiaoban
+    repo: https://github.com/Caitao-oss/xiaoban
+    host: github
+    name: xiaoban
+    description: "AI entertainment companion chatbot - roleplay, memory system, knowledge OCR, image gen, TTS, 11 AI providers"
+    language: Svelte
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 0, last_commit: "2026-06-13", license: null, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-companion-chat], sources: [github] }
+    relevance: feature-set reference for companion memory and OCR, but technology stack is not the requested Python desktop GUI
+  - id: github__iwyxdxl__WeChatBot_WXAUTO_SE
+    repo: https://github.com/iwyxdxl/WeChatBot_WXAUTO_SE
+    host: github
+    name: WeChatBot_WXAUTO_SE
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: true }
+    signals: { stars: 879, last_commit: "2026-01-15", license: NOASSERTION, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-dom-desktop-private-chat, kw-cap-companion-chat], sources: [github] }
+    relevance: archived architecture reference for wxauto-based AI chat, not a maintainable dependency
+  - id: github__KouriChat__KouriChat
+    repo: https://github.com/KouriChat/KouriChat
+    host: github
+    name: KouriChat
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 3260, last_commit: "2026-09-12", license: NOASSERTION, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-companion-chat], sources: [github] }
+    relevance: strong companion-persona and memory reference; its repository explicitly forbids Tencent integrations, so it cannot supply the QQ adapter
+  - id: github__byteD-x__wechat-bot
+    repo: https://github.com/byteD-x/wechat-bot
+    host: github
+    name: wechat-bot
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 34, last_commit: "2026-07-16", license: MIT, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-dom-desktop-private-chat, kw-cap-context-memory, kw-cap-companion-chat], sources: [github] }
+    relevance: strong full-stack analog combining UI automation, multiple model APIs, memory, emotion handling, and a desktop-style interface
+  - id: github__mochihongye__ai-girlfriend
+    repo: https://github.com/mochihongye/ai-girlfriend
+    host: github
+    name: ai-girlfriend
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 2, last_commit: "2026-08-26", license: null, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-dom-desktop-private-chat, kw-cap-companion-chat], sources: [github] }
+    relevance: companion-chat analog with memory and desktop presence, but very low adoption and no license
+  - id: github__liuly0322__QQAutoGUISender
+    repo: https://github.com/liuly0322/QQAutoGUISender
+    host: github
+    name: QQAutoGUISender
+    description: "An anonymous chat forward bot"
+    language: HTML
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 9, last_commit: "2024-09-18", license: MIT, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-comp-qq-ui-auto-reply], sources: [github] }
+    relevance: small QQ GUI sender reference; not a complete recognition or companion-chat implementation
+  - id: github__a1092569461-eng__window-auto-reply
+    repo: https://github.com/a1092569461-eng/window-auto-reply
+    host: github
+    name: window-auto-reply
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 1, last_commit: "2026-03-19", license: MIT, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-comp-qq-ui-auto-reply, kw-tech-ui-recognition], sources: [github] }
+    relevance: description claims generic desktop-window auto reply across WeChat, QQ, DingTalk, and Feishu; promising but needs a deep review
+  - id: github__asweigart__pyperclip
+    repo: https://github.com/asweigart/pyperclip
+    host: github
+    name: pyperclip
+    description: "Python module for cross-platform clipboard functions."
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 1843, last_commit: "2025-09-26", license: BSD-3-Clause, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-input-automation], sources: [github] }
+    relevance: reusable clipboard transport for reliably pasting Chinese DeepSeek output into the QQ input box
+  - id: github__pyside__pyside-setup
+    repo: https://github.com/pyside/pyside-setup
+    host: github
+    name: pyside-setup
+    description: "Git super project for PySide"
+    language: C++
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 133, last_commit: "2026-09-22", license: null, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-cap-gui], sources: [github] }
+    relevance: official Qt for Python project surface; choose PySide6 for the GUI and confirm LGPL compliance during packaging
+  - id: github__deepseek-ai__DeepSeek-V3
+    repo: https://github.com/deepseek-ai/DeepSeek-V3
+    host: github
+    name: DeepSeek-V3
+    description: null
+    language: Python
+    flags: { is_fork: false, fork_of: null, is_mirror: null, archived: false }
+    signals: { stars: 104482, last_commit: "2025-08-28", license: MIT, downloads: null, as_of: "2026-09-23T13:35:48Z" }
+    found_by: { group_ids: [kw-anchor-deepseek-api], sources: [github] }
+    relevance: official DeepSeek model/open-source presence; not needed for API-key generation, which should use the hosted API
+
+notes:
+  vocabulary_discoveries:
+    - term: desktop-chatbot
+      seen_at: GitHub repository descriptions during module search
+    - term: single-window automation
+      seen_at: GitHub repository descriptions during QQ-specific search
+    - term: non-text event
+      seen_at: inferred from the caller's explicit emoji-recognition exclusion and message-detection requirement
+  dead_ends:
+    - exact phrase searches for chat-window OCR message detection returned recorded zero-hit cells
+    - exact phrase searches for desktop RPA plus OCR returned no direct repository in this angle
+    - QQ protocol bot projects such as OneBot-based assistants were excluded because they contradict the no-protocol requirement
+  unreachable_sources: []

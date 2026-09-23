@@ -1,0 +1,1 @@
+"""Desktop input automation."""
