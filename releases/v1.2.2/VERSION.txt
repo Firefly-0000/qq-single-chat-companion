@@ -1,0 +1,5 @@
+QQ Auto Reply
+Release label: V1.2.2
+Skills: bundled goutoujunshi skill plus repository-level .agents/skills copy.
+GUI: candidate/reason/tradeoff review and fill-only action.
+Fixes: disable model thinking for reply generation and Goutoujunshi JSON output, raise the Goutoujunshi JSON token floor to 1200, and report response length on parse failures.

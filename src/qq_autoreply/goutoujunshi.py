@@ -148,8 +148,9 @@ class GoutoujunshiGenerator:
                         },
                     ],
                     temperature=0.8,
-                    max_tokens=max(self.settings.max_reply_tokens, 700),
+                    max_tokens=max(self.settings.max_reply_tokens, 1_200),
                     response_format={"type": "json_object"},
+                    extra_body={"thinking": {"type": "disabled"}},
                     stream=False,
                 )
             except AuthenticationError as exc:
@@ -198,11 +199,15 @@ class GoutoujunshiGenerator:
         start = content.find("{")
         end = content.rfind("}")
         if start < 0 or end < start:
-            raise GenerationError("Goutoujunshi returned invalid JSON")
+            raise GenerationError(
+                f"Goutoujunshi returned invalid JSON (chars={len(content)})"
+            )
         try:
             payload = json.loads(content[start : end + 1])
         except json.JSONDecodeError as exc:
-            raise GenerationError("Goutoujunshi returned invalid JSON") from exc
+            raise GenerationError(
+                f"Goutoujunshi returned invalid JSON (chars={len(content)})"
+            ) from exc
 
         raw_candidates = payload.get("candidates")
         if not isinstance(raw_candidates, list) or not raw_candidates:

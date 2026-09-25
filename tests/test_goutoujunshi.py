@@ -14,8 +14,10 @@ from qq_autoreply.goutoujunshi import (
 class FakeCompletions:
     def __init__(self, payload: dict[str, object]) -> None:
         self.payload = payload
+        self.last_kwargs: dict[str, object] = {}
 
-    def create(self, **_: object) -> object:
+    def create(self, **kwargs: object) -> object:
+        self.last_kwargs = kwargs
         return SimpleNamespace(
             choices=[
                 SimpleNamespace(
@@ -74,13 +76,17 @@ def test_skill_prompt_embeds_bundled_instructions() -> None:
 
 def test_skill_returns_best_candidate() -> None:
     generator = GoutoujunshiGenerator(AppSettings(api_key="sk-test"))
-    generator._client = FakeClient(result_payload())  # type: ignore[assignment]
+    client = FakeClient(result_payload())
+    generator._client = client  # type: ignore[assignment]
 
     reply = generator.generate(messages())
 
     assert reply == "好，你先忙。"
     assert generator.last_result is not None
     assert generator.last_result.best_reply == "好，你先忙。"
+    assert client.chat.completions.last_kwargs["extra_body"] == {
+        "thinking": {"type": "disabled"}
+    }
 
 
 def test_switchable_generator_uses_skill_mode() -> None:

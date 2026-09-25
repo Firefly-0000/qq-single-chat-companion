@@ -59,6 +59,7 @@ class DeepSeekReplyGenerator:
                     messages=request_messages,
                     temperature=0.8,
                     max_tokens=self.settings.max_reply_tokens,
+                    extra_body={"thinking": {"type": "disabled"}},
                     stream=False,
                 )
             except AuthenticationError as exc:
