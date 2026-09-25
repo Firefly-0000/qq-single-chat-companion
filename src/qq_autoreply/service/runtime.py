@@ -74,6 +74,7 @@ class Runtime:
         for window in ordered:
             self.settings.target_user_name = target_name
             self.detector.bind(window)
+            self.capture.window_handle = window.handle
             validation = self.detector.validate_target()
             if validation is None:
                 previous_target = self.storage.get_state("bound_target")

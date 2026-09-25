@@ -1,6 +1,6 @@
 # QQ 单会话陪聊助手
 
-当前版本：`1.1.0`
+当前版本：`1.1.1`
 
 本项目按 `docs/acceptance/single-private-chat-companion-v1.md` 实现。
 

@@ -1,0 +1,4 @@
+QQ Auto Reply
+Release label: V1.1.1
+Behavior: capture fallback chain (mss -> PrintWindow -> ImageGrab), bottom chat
+input targeting, idle-safe focus management, and foreground restoration.
