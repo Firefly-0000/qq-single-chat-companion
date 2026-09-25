@@ -1,0 +1,5 @@
+QQ Auto Reply
+Release label: V2.0.1
+Context: purges legacy OCR placeholders, filters non-text placeholders and consecutive duplicates, and migrates the stored context to clean UIA history.
+Speakers: Goutoujunshi context now uses explicit “对方” and “我” labels; standard mode documents the same role mapping.
+Monitoring: Windows UI Automation incremental message monitoring remains the only runtime detection path.

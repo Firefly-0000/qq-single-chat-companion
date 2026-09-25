@@ -108,6 +108,8 @@ def test_skill_payload_includes_long_context_summary() -> None:
     request_messages = client.chat.completions.last_kwargs["messages"]
     payload = json.loads(request_messages[1]["content"])
     assert payload["summary"] == "更早对话摘要：对方之前提到过出差。"
+    assert payload["visible_context"][0]["speaker"] == "对方"
+    assert "role" not in payload["visible_context"][0]
 
 
 def test_switchable_generator_uses_skill_mode() -> None:

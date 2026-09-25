@@ -53,6 +53,9 @@ def test_generate_returns_text() -> None:
     assert client.chat.completions.last_kwargs["extra_body"] == {
         "thinking": {"type": "disabled"}
     }
+    system_prompt = client.chat.completions.last_kwargs["messages"][0]["content"]
+    assert "user 表示对方" in system_prompt
+    assert "assistant 表示用户本人" in system_prompt
 
 
 def test_empty_response_is_retried() -> None:

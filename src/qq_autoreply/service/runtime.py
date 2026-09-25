@@ -18,6 +18,9 @@ class TargetBindingError(RuntimeError):
     pass
 
 
+CONTEXT_SCHEMA_VERSION = "2.0.1-uia-speakers"
+
+
 @dataclass(slots=True)
 class Runtime:
     settings: AppSettings
@@ -78,8 +81,20 @@ class Runtime:
                 if previous_target and previous_target != target_name:
                     self.storage.clear_messages()
                     self.storage.clear_events()
-                if not self.storage.recent_messages(1):
-                    self.storage.replace_messages(self.detector.read_visible_history())
+                visible_history = self.detector.read_visible_history(
+                    self.settings.context_recent_messages
+                )
+                schema_version = self.storage.get_state("context_schema_version")
+                if schema_version != CONTEXT_SCHEMA_VERSION:
+                    if visible_history:
+                        self.storage.replace_messages(visible_history)
+                    self.storage.clear_events()
+                    self.storage.set_state(
+                        "context_schema_version",
+                        CONTEXT_SCHEMA_VERSION,
+                    )
+                elif not self.storage.recent_messages(1) and visible_history:
+                    self.storage.replace_messages(visible_history)
                 self.storage.set_state("bound_target", target_name)
                 return window
             errors.append(f"{window.title}: {validation.reason}")
