@@ -9,6 +9,7 @@ from pathlib import Path
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QFont, QFontDatabase
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QApplication,
     QCheckBox,
     QFormLayout,
@@ -21,6 +22,8 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QSpinBox,
+    QTableWidget,
+    QTableWidgetItem,
     QTabWidget,
     QVBoxLayout,
     QWidget,
@@ -30,7 +33,7 @@ from ..config import AppSettings, SettingsStore
 from ..domain import BotState, ChatMessage, TickResult
 from ..service.orchestrator import Orchestrator
 from ..service.runtime import Runtime, TargetBindingError
-from .worker import EngineWorker
+from .worker import EngineWorker, SkillAnalysisWorker, SkillFillWorker
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +54,9 @@ class MainWindow(QMainWindow):
             sender=self.runtime.sender,
         )
         self.worker: EngineWorker | None = None
+        self.skill_analysis_worker: SkillAnalysisWorker | None = None
+        self.skill_fill_worker: SkillFillWorker | None = None
+        self._rendered_skill_result: object | None = None
         self.bound_window = None
         self._build_ui()
         self._load_settings_into_ui()
@@ -61,6 +67,7 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.tabs.addTab(self._build_control_tab(), "控制")
         self.tabs.addTab(self._build_conversation_tab(), "对话")
+        self.tabs.addTab(self._build_skill_tab(), "军师")
         self.tabs.addTab(self._build_settings_tab(), "设置")
         self.setCentralWidget(self.tabs)
         self.statusBar().showMessage("未绑定")
@@ -154,6 +161,58 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.context_output, stretch=1)
         return page
 
+    def _build_skill_tab(self) -> QWidget:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+
+        self.skill_enabled_checkbox = QCheckBox("启用狗头军师模式")
+        self.skill_enabled_checkbox.toggled.connect(self._toggle_skill_mode)
+        layout.addWidget(self.skill_enabled_checkbox)
+
+        form = QFormLayout()
+        self.skill_relationship_input = QLineEdit()
+        self.skill_style_input = QLineEdit()
+        self.skill_goal_input = QLineEdit()
+        form.addRow("关系", self.skill_relationship_input)
+        form.addRow("表达风格", self.skill_style_input)
+        form.addRow("当前目标", self.skill_goal_input)
+        layout.addLayout(form)
+
+        actions = QHBoxLayout()
+        self.skill_analyze_button = QPushButton("分析当前上下文")
+        self.skill_analyze_button.clicked.connect(self._analyze_with_skill)
+        self.skill_fill_button = QPushButton("填入首选草稿")
+        self.skill_fill_button.clicked.connect(self._fill_selected_skill_candidate)
+        actions.addWidget(self.skill_analyze_button)
+        actions.addWidget(self.skill_fill_button)
+        actions.addStretch(1)
+        layout.addLayout(actions)
+
+        self.skill_status_label = QLabel("狗头军师尚未运行")
+        layout.addWidget(self.skill_status_label)
+
+        self.skill_summary_output = QPlainTextEdit()
+        self.skill_summary_output.setReadOnly(True)
+        self.skill_summary_output.setMaximumHeight(170)
+        layout.addWidget(self.skill_summary_output)
+
+        self.skill_candidates_table = QTableWidget(0, 3)
+        self.skill_candidates_table.setHorizontalHeaderLabels(["候选", "理由", "代价"])
+        self.skill_candidates_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
+        self.skill_candidates_table.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+        self.skill_candidates_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+        self.skill_candidates_table.horizontalHeader().setStretchLastSection(True)
+        layout.addWidget(self.skill_candidates_table, stretch=1)
+        return page
+
     def _build_settings_tab(self) -> QWidget:
         page = QWidget()
         outer = QVBoxLayout(page)
@@ -214,6 +273,14 @@ class MainWindow(QMainWindow):
         self.relationship_input.setText(self.settings.persona.relationship)
         self.tone_input.setText(self.settings.persona.tone)
         self.forbidden_topics_input.setText("，".join(self.settings.persona.forbidden_topics))
+        self.skill_relationship_input.setText(self.settings.skill_relationship)
+        self.skill_style_input.setText(self.settings.skill_style)
+        self.skill_goal_input.setText(self.settings.skill_goal)
+        self.skill_enabled_checkbox.blockSignals(True)
+        self.skill_enabled_checkbox.setChecked(
+            self.settings.reply_mode == "goutoujunshi"
+        )
+        self.skill_enabled_checkbox.blockSignals(False)
         self.auto_start_checkbox.setChecked(self.settings.auto_start)
         self.auto_send_checkbox.setChecked(self.settings.auto_send)
         self._update_bind_button_state()
@@ -233,6 +300,17 @@ class MainWindow(QMainWindow):
                 "poll_interval_ms": self.poll_interval_input.value(),
                 "request_timeout_seconds": self.timeout_input.value(),
                 "max_reply_chars": self.max_reply_input.value(),
+                "reply_mode": (
+                    "goutoujunshi"
+                    if self.skill_enabled_checkbox.isChecked()
+                    else "standard"
+                ),
+                "skill_relationship": self.skill_relationship_input.text().strip()
+                or self.settings.skill_relationship,
+                "skill_style": self.skill_style_input.text().strip()
+                or self.settings.skill_style,
+                "skill_goal": self.skill_goal_input.text().strip()
+                or self.settings.skill_goal,
                 "auto_start": self.auto_start_checkbox.isChecked(),
                 "auto_send": self.auto_send_checkbox.isChecked(),
                 "persona": self.settings.persona.model_copy(
@@ -344,6 +422,100 @@ class MainWindow(QMainWindow):
             self._show_error("保存失败", f"无法保存自动启动设置：{exc}")
         self._append_log("启动后自动开始已开启。" if enabled else "启动后自动开始已关闭。")
 
+    def _toggle_skill_mode(self, enabled: bool) -> None:
+        settings = self._collect_settings()
+        self.settings = settings
+        self.runtime.update_settings(settings)
+        self.orchestrator.settings = settings
+        self.settings_store.save(settings)
+        self._append_log("狗头军师模式已开启。" if enabled else "已切回普通模式。")
+
+    def _analyze_with_skill(self) -> None:
+        if self.skill_analysis_worker is not None and self.skill_analysis_worker.isRunning():
+            return
+        messages = self.runtime.storage.recent_messages(
+            self.settings.context_recent_messages
+        )
+        if not messages:
+            self._show_error("无法分析", "当前没有可用于分析的上下文。")
+            return
+        self.skill_analyze_button.setEnabled(False)
+        self.skill_status_label.setText("正在分析当前上下文…")
+        worker = SkillAnalysisWorker(self.runtime.generator, messages)
+        worker.result_ready.connect(self._handle_skill_analysis)
+        worker.failed.connect(self._handle_skill_error)
+        worker.finished.connect(lambda: self.skill_analyze_button.setEnabled(True))
+        self.skill_analysis_worker = worker
+        worker.start()
+
+    def _handle_skill_analysis(self, result: object) -> None:
+        self._rendered_skill_result = result
+        self._render_skill_result(result)
+        self.skill_status_label.setText("分析完成；可人工核对后填入草稿。")
+
+    def _handle_skill_error(self, message: str) -> None:
+        self.skill_status_label.setText("分析失败")
+        self._show_error("狗头军师分析失败", message)
+
+    def _render_skill_result(self, result: object) -> None:
+        candidates = list(getattr(result, "candidates", []))
+        best_index = int(getattr(result, "best_index", 0) or 0)
+        summary_lines = [
+            f"情绪承接：{getattr(result, 'support', '')}",
+            f"事实：{'；'.join(getattr(result, 'facts', []))}",
+            f"推测：{'；'.join(getattr(result, 'hypotheses', []))}",
+            f"未知：{'；'.join(getattr(result, 'unknowns', []))}",
+            f"建议：{getattr(result, 'recommendation', '')}",
+            f"下一步：{getattr(result, 'next_step', '')}",
+            f"停止条件：{getattr(result, 'stop_condition', '')}",
+        ]
+        self.skill_summary_output.setPlainText("\n".join(summary_lines))
+        self.skill_candidates_table.setRowCount(len(candidates))
+        for row, candidate in enumerate(candidates):
+            marker = "★ " if row == best_index else ""
+            values = [
+                marker + str(getattr(candidate, "text", "")),
+                str(getattr(candidate, "reason", "")),
+                str(getattr(candidate, "tradeoff", "")),
+            ]
+            for column, value in enumerate(values):
+                self.skill_candidates_table.setItem(
+                    row,
+                    column,
+                    QTableWidgetItem(value),
+                )
+        if candidates:
+            self.skill_candidates_table.selectRow(
+                min(max(best_index, 0), len(candidates) - 1)
+            )
+            self.skill_candidates_table.resizeColumnsToContents()
+            self.skill_candidates_table.horizontalHeader().setStretchLastSection(True)
+
+    def _fill_selected_skill_candidate(self) -> None:
+        row = self.skill_candidates_table.currentRow()
+        if row < 0:
+            self._show_error("无法填入", "请先选择一条候选回复。")
+            return
+        item = self.skill_candidates_table.item(row, 0)
+        if item is None or not item.text().strip():
+            self._show_error("无法填入", "当前候选为空。")
+            return
+        text = item.text().removeprefix("★ ").strip()
+        if self.skill_fill_worker is not None and self.skill_fill_worker.isRunning():
+            return
+        self.skill_fill_button.setEnabled(False)
+        self.skill_status_label.setText("正在写入 QQ 输入框…")
+        worker = SkillFillWorker(self.runtime.sender, text)
+        worker.finished_ok.connect(self._handle_skill_fill_ok)
+        worker.failed.connect(self._handle_skill_error)
+        worker.finished.connect(lambda: self.skill_fill_button.setEnabled(True))
+        self.skill_fill_worker = worker
+        worker.start()
+
+    def _handle_skill_fill_ok(self, text: str) -> None:
+        self.skill_status_label.setText("草稿已写入 QQ 输入框，确认后手动发送。")
+        self._append_log(f"狗头军师草稿已填入：{text}")
+
     def _save_settings(self) -> None:
         try:
             settings = self._collect_settings()
@@ -391,6 +563,10 @@ class MainWindow(QMainWindow):
             self._append_log(f"回复草稿：{result.reply}")
         if result.context:
             self._render_context(result.context)
+        last_skill = getattr(self.runtime.generator, "last_skill_result", None)
+        if last_skill is not None and last_skill is not self._rendered_skill_result:
+            self._rendered_skill_result = last_skill
+            self._render_skill_result(last_skill)
 
     def _handle_worker_error(self, message: str) -> None:
         self._show_error("运行错误", message)

@@ -32,3 +32,37 @@ class EngineWorker(QThread):
                 logger.exception("Engine worker failed")
                 self.failed.emit(str(exc))
             self.msleep(self.interval_ms)
+
+
+class SkillAnalysisWorker(QThread):
+    result_ready = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, generator: object, messages: list[object]) -> None:
+        super().__init__()
+        self.generator = generator
+        self.messages = messages
+
+    def run(self) -> None:
+        try:
+            result = self.generator.skill.analyze(self.messages)
+            self.result_ready.emit(result)
+        except Exception as exc:
+            self.failed.emit(str(exc))
+
+
+class SkillFillWorker(QThread):
+    finished_ok = Signal(str)
+    failed = Signal(str)
+
+    def __init__(self, sender: object, text: str) -> None:
+        super().__init__()
+        self.sender = sender
+        self.text = text
+
+    def run(self) -> None:
+        try:
+            self.sender.fill(self.text)
+            self.finished_ok.emit(self.text)
+        except Exception as exc:
+            self.failed.emit(str(exc))

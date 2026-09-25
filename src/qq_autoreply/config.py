@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Protocol
+from typing import Literal, Protocol
 
 from pydantic import BaseModel, Field
 
@@ -32,9 +32,14 @@ class AppSettings(BaseModel):
     max_reply_chars: int = Field(default=500, ge=10, le=5_000)
     max_reply_tokens: int = Field(default=300, ge=32, le=4_096)
     context_recent_messages: int = Field(default=24, ge=4, le=200)
+    reply_mode: Literal["standard", "goutoujunshi"] = "standard"
+    skill_relationship: str = "熟悉的朋友"
+    skill_style: str = "自然、简短、有分寸"
+    skill_goal: str = "自然陪聊"
     batch_window_ms: int = Field(default=3_000, ge=0, le=30_000)
     frame_change_threshold: float = Field(default=0.003, ge=0.0001, le=0.25)
     ocr_min_confidence: float = Field(default=0.55, ge=0.0, le=1.0)
+    colorful_region_threshold: float = Field(default=0.12, ge=0.0, le=1.0)
     focus_guard_idle_seconds: float = Field(default=1.2, ge=0.0, le=10.0)
     auto_start: bool = False
     auto_send: bool = False

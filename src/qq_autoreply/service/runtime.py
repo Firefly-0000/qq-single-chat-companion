@@ -6,6 +6,7 @@ from ..automation.input import DesktopReplySender
 from ..config import AppSettings, project_root
 from ..deepseek import DeepSeekReplyGenerator
 from ..domain import QQWindowInfo
+from ..goutoujunshi import GoutoujunshiGenerator, SwitchableReplyGenerator
 from ..storage import Storage
 from ..vision.capture import MssCapture
 from ..vision.detector import MessageDetector, normalize_text
@@ -25,7 +26,7 @@ class Runtime:
     capture: MssCapture
     ocr: RapidOcrEngine
     detector: MessageDetector
-    generator: DeepSeekReplyGenerator
+    generator: SwitchableReplyGenerator
     sender: DesktopReplySender
 
     @classmethod
@@ -40,7 +41,13 @@ class Runtime:
             ocr=ocr,
             window_provider=window_provider,
         )
-        generator = DeepSeekReplyGenerator(settings)
+        standard_generator = DeepSeekReplyGenerator(settings)
+        skill_generator = GoutoujunshiGenerator(settings)
+        generator = SwitchableReplyGenerator(
+            settings=settings,
+            standard=standard_generator,
+            skill=skill_generator,
+        )
         sender = DesktopReplySender(
             settings=settings,
             detector=detector,

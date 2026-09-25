@@ -1,0 +1,6 @@
+QQ Auto Reply
+Release label: V1.2.0
+Bundled skill: goutoujunshi
+GUI: built-in PySide6 skill tab with candidate, reason, tradeoff, and fill actions.
+Input: bottom QQ chat editor targeting with idle-safe focus handling.
+Capture: mss -> PrintWindow -> ImageGrab fallback chain.

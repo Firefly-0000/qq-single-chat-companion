@@ -19,7 +19,7 @@ class FakeOcr:
         return self.responses.pop(0)
 
 
-def frame(color: int = 0) -> np.ndarray:
+def frame(color: int | tuple[int, int, int] = 0) -> np.ndarray:
     return np.full((800, 873, 3), color, dtype=np.uint8)
 
 
@@ -114,6 +114,30 @@ def test_non_text_event_is_detected() -> None:
     assert result.kind == EventKind.NON_TEXT
     assert result.event is not None
     assert result.event.text == "[non-text message event]"
+
+
+def test_colorful_image_or_sticker_is_non_text() -> None:
+    detector = build_detector(
+        frames=[frame(1), frame(0), frame((0, 0, 255))],
+        responses=[[line("张三", 100, 250)], [line("误识别文字", 20, 220)]],
+    )
+
+    detector.observe()
+    result = detector.observe()
+
+    assert result.kind == EventKind.NON_TEXT
+
+
+def test_symbol_only_ocr_is_non_text() -> None:
+    detector = build_detector(
+        frames=[frame(1), frame(0), frame(255)],
+        responses=[[line("张三", 100, 250)], [line("!!!...", 20, 220)]],
+    )
+
+    detector.observe()
+    result = detector.observe()
+
+    assert result.kind == EventKind.NON_TEXT
 
 
 def test_self_message_is_not_replied_to() -> None:

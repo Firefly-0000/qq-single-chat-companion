@@ -31,6 +31,10 @@ def normalize_text(value: str) -> str:
     return re.sub(r"\s+", "", normalized)
 
 
+def has_meaningful_text(value: str) -> bool:
+    return any(character.isalnum() for character in value)
+
+
 @dataclass(slots=True)
 class _LineGroup:
     lines: list[OcrLine]
@@ -167,6 +171,25 @@ class MessageDetector:
             return DetectionResult(kind=EventKind.NONE, reason="no significant frame change")
 
         changed_bounds = self._changed_bounds(self._last_frame, message_frame)
+        if changed_bounds is not None and self._colorful_ratio(
+            message_frame,
+            changed_bounds,
+        ) >= self.settings.colorful_region_threshold:
+            fingerprint = self._pixel_fingerprint(message_frame)
+            self._last_frame = message_frame
+            if fingerprint == self._last_fingerprint:
+                return DetectionResult(kind=EventKind.NONE, reason="known image event")
+            self._last_fingerprint = fingerprint
+            return DetectionResult(
+                kind=EventKind.NON_TEXT,
+                event=self._event(
+                    kind=EventKind.NON_TEXT,
+                    text="[non-text message event]",
+                    confidence=0.0,
+                    fingerprint=fingerprint,
+                ),
+            )
+
         lines = self.ocr.recognize(message_frame)
         if changed_bounds is not None:
             margin = 24
@@ -177,6 +200,7 @@ class MessageDetector:
                 and line.center_y <= changed_bounds.bottom + margin
             ]
         groups = self._group_lines(lines)
+        groups = [group for group in groups if has_meaningful_text(group.text)]
         if not groups:
             fingerprint = self._pixel_fingerprint(message_frame)
             self._last_frame = message_frame
@@ -292,6 +316,20 @@ class MessageDetector:
             return None
         left, top, width, height = cv2.boundingRect(coordinates)
         return WindowRect(left=left, top=top, right=left + width, bottom=top + height)
+
+    @staticmethod
+    def _colorful_ratio(image: np.ndarray, bounds: WindowRect) -> float:
+        crop = image[
+            max(0, bounds.top) : max(1, bounds.bottom),
+            max(0, bounds.left) : max(1, bounds.right),
+        ]
+        if crop.size == 0:
+            return 0.0
+        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+        saturation = hsv[:, :, 1]
+        value = hsv[:, :, 2]
+        colorful = (saturation >= 80) & (value >= 80)
+        return float(np.count_nonzero(colorful) / colorful.size)
 
     @staticmethod
     def _group_lines(lines: list[OcrLine]) -> list[_LineGroup]:

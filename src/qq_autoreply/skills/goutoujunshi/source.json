@@ -1,0 +1,7 @@
+{
+  "skill_repository": "https://github.com/shengjidaguai-china/goutoujunshi",
+  "skill_commit": "6db7354a4002dc7c448a9c87ffdad8132570c9d3",
+  "gui_reference_repository": "https://github.com/shengjidaguai-china/goutoujunshi-jev-chat",
+  "gui_reference_commit": "fa4bd3086b5f89889a942d8f8038f252c72e5a3a",
+  "license": "MIT"
+}

@@ -13,5 +13,6 @@ logs/
 outputs/*
 !outputs/.gitkeep
 work/.venv-prior-art/
+work/repos/
 work/screenshots/
 work/tools/
