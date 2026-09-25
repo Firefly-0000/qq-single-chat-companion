@@ -117,6 +117,9 @@ class GoutoujunshiGenerator:
         return "\n\n".join(sections)
 
     def analyze(self, messages: list[ChatMessage]) -> GoutoujunshiResult:
+        summary = "\n".join(
+            message.text for message in messages if message.role == "system"
+        ).strip()
         visible = [
             {"role": message.role, "text": message.text}
             for message in messages
@@ -132,6 +135,7 @@ class GoutoujunshiGenerator:
             "relationship": self.settings.skill_relationship,
             "style": self.settings.skill_style,
             "goal": self.settings.skill_goal,
+            "summary": summary,
             "visible_context": visible,
         }
 

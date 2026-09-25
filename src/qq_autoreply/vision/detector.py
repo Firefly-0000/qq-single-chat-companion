@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-import re
 import time
-import unicodedata
 import uuid
 from dataclasses import dataclass
 
@@ -20,19 +18,11 @@ from ..domain import (
     QQWindowInfo,
     WindowRect,
 )
+from ..text import has_meaningful_text, normalize_text
 from .capture import MssCapture
 from .layout import LayoutProfile, QQChatLayout, build_layout
 from .ocr import RapidOcrEngine
 from .windows import Win32WindowProvider
-
-
-def normalize_text(value: str) -> str:
-    normalized = unicodedata.normalize("NFKC", value).casefold()
-    return re.sub(r"\s+", "", normalized)
-
-
-def has_meaningful_text(value: str) -> bool:
-    return any(character.isalnum() for character in value)
 
 
 @dataclass(slots=True)

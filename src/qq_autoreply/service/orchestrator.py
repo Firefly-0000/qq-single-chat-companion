@@ -91,6 +91,9 @@ class Orchestrator:
                 context=self.storage.recent_messages(self.settings.context_recent_messages),
             )
 
+        if detection.kind == EventKind.SELF_TEXT:
+            return self._handle_self_text(detection)
+
         event = detection.event
         if event is None:
             self.state = BotState.PAUSED
@@ -132,7 +135,7 @@ class Orchestrator:
             ChatMessage(
                 role="user",
                 text=event.text,
-                source="ocr",
+                source="uia",
                 confidence=event.confidence,
                 timestamp=event.captured_at,
             )
@@ -164,6 +167,8 @@ class Orchestrator:
                 build_generation_context(
                     context,
                     self.settings.context_recent_messages,
+                    summary_char_limit=self.settings.context_summary_chars,
+                    total_char_limit=self.settings.context_char_limit,
                 )
             )
         except Exception as exc:
@@ -197,7 +202,7 @@ class Orchestrator:
                 role="assistant",
                 text=reply,
                 source="deepseek",
-                timestamp=event.captured_at,
+                timestamp=time.time(),
             )
         )
 
@@ -256,6 +261,62 @@ class Orchestrator:
             message="reply sent",
             context=self.storage.recent_messages(self.settings.context_recent_messages),
         )
+
+    def _handle_self_text(self, detection: DetectionResult) -> TickResult:
+        event = detection.event
+        if event is None:
+            return TickResult(
+                state=self.state,
+                kind=EventKind.NONE,
+                message="self message event is missing",
+            )
+        if not self.storage.record_event(event, EventStatus.DETECTED):
+            return TickResult(state=self.state, kind=EventKind.NONE, message="duplicate event")
+
+        if self._matches_recent_generated_reply(event.text):
+            self.storage.update_event_status(event.event_id, EventStatus.IGNORED)
+            return TickResult(
+                state=self.state,
+                kind=EventKind.NONE,
+                message="generated reply already recorded",
+                context=self.storage.recent_messages(
+                    self.settings.context_recent_messages
+                ),
+            )
+
+        self.storage.add_message(
+            ChatMessage(
+                role="assistant",
+                text=event.text,
+                source="uia",
+                confidence=event.confidence,
+                timestamp=event.captured_at,
+            )
+        )
+        self.storage.update_event_status(event.event_id, EventStatus.IGNORED)
+        return TickResult(
+            state=self.state,
+            kind=EventKind.SELF_TEXT,
+            event=event,
+            message="self message recorded",
+            context=self.storage.recent_messages(self.settings.context_recent_messages),
+        )
+
+    def _matches_recent_generated_reply(self, text: str) -> bool:
+        expected = text.strip()
+        if not expected:
+            return False
+        now = time.time()
+        for message in reversed(self.storage.recent_messages(20)):
+            if now - message.timestamp > 20:
+                return False
+            if (
+                message.role == "assistant"
+                and message.source == "deepseek"
+                and message.text.strip() == expected
+            ):
+                return True
+        return False
 
     def _retry_deferred_send(self) -> TickResult:
         if self._deferred_reply is None:

@@ -3,12 +3,10 @@ from __future__ import annotations
 import logging
 import time
 import warnings
+from typing import Any
 
 from ..config import AppSettings
-from ..domain import SendDeferredError, WindowRect
-from ..vision.capture import MssCapture
-from ..vision.detector import MessageDetector, normalize_text
-from ..vision.ocr import RapidOcrEngine
+from ..domain import SendDeferredError
 from ..vision.windows import Win32WindowProvider
 
 logger = logging.getLogger(__name__)
@@ -89,21 +87,17 @@ class DesktopReplySender:
         self,
         *,
         settings: AppSettings,
-        detector: MessageDetector,
-        capture: MssCapture,
-        ocr: RapidOcrEngine,
+        detector: Any,
         window_provider: Win32WindowProvider,
     ) -> None:
         self.settings = settings
         self.detector = detector
-        self.capture = capture
-        self.ocr = ocr
         self.window_provider = window_provider
 
     def send(self, text: str) -> None:
         self._write_chat_input(text)
         self._invoke_send()
-        if not self._verify_sent(text, self.detector.layout.messages):
+        if not self.detector.wait_for_self_message(text):
             raise SendUncertainError("Could not confirm outgoing message")
 
     def fill(self, text: str) -> None:
@@ -177,22 +171,6 @@ class DesktopReplySender:
             time.sleep(0.2)
             return
         raise UIAutomationError(str(last_error or "QQ send button was not found"))
-
-    def _verify_sent(self, text: str, message_rect: WindowRect) -> bool:
-        expected = normalize_text(text)
-        deadline = time.monotonic() + 5.0
-        while time.monotonic() < deadline:
-            frame = self.capture.capture(message_rect)
-            lines = self.ocr.recognize(frame)
-            for line in lines:
-                if line.center_x < message_rect.width * 0.55:
-                    continue
-                observed = normalize_text(line.text)
-                if expected and (expected in observed or observed in expected):
-                    return True
-            time.sleep(0.25)
-        return False
-
 
 class FakeReplySender:
     def __init__(self) -> None:

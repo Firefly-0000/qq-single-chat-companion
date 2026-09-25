@@ -89,6 +89,27 @@ def test_skill_returns_best_candidate() -> None:
     }
 
 
+def test_skill_payload_includes_long_context_summary() -> None:
+    generator = GoutoujunshiGenerator(AppSettings(api_key="sk-test"))
+    client = FakeClient(result_payload())
+    generator._client = client  # type: ignore[assignment]
+    context = [
+        ChatMessage(
+            role="system",
+            text="更早对话摘要：对方之前提到过出差。",
+            source="summary",
+            timestamp=0.5,
+        ),
+        *messages(),
+    ]
+
+    generator.generate(context)
+
+    request_messages = client.chat.completions.last_kwargs["messages"]
+    payload = json.loads(request_messages[1]["content"])
+    assert payload["summary"] == "更早对话摘要：对方之前提到过出差。"
+
+
 def test_switchable_generator_uses_skill_mode() -> None:
     class Standard:
         def configure(self, settings: AppSettings) -> None:

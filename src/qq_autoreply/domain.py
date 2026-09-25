@@ -22,6 +22,7 @@ class SendDeferredError(RuntimeError):
 class EventKind(StrEnum):
     NONE = "none"
     PEER_TEXT = "peer_text"
+    SELF_TEXT = "self_text"
     NON_TEXT = "non_text_event"
     TARGET_MISMATCH = "target_mismatch"
     LOW_CONFIDENCE = "low_confidence"
@@ -33,6 +34,7 @@ class EventStatus(StrEnum):
     DRAFTED = "DRAFTED"
     SENT = "SENT"
     BLOCKED = "BLOCKED"
+    IGNORED = "IGNORED"
     FAILED = "FAILED"
     SEND_UNCERTAIN = "SEND_UNCERTAIN"
 

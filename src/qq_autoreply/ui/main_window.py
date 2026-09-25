@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
         self.base_url_input = QLineEdit()
         self.model_input = QLineEdit()
         self.poll_interval_input = QSpinBox()
-        self.poll_interval_input.setRange(250, 10_000)
+        self.poll_interval_input.setRange(100, 10_000)
         self.poll_interval_input.setSuffix(" ms")
         self.timeout_input = QSpinBox()
         self.timeout_input.setRange(5, 300)
@@ -232,6 +232,13 @@ class MainWindow(QMainWindow):
         self.max_reply_input = QSpinBox()
         self.max_reply_input.setRange(10, 5_000)
         self.max_reply_input.setSuffix(" 字")
+        self.context_messages_input = QSpinBox()
+        self.context_messages_input.setRange(20, 1_000)
+        self.context_messages_input.setSuffix(" 条")
+        self.context_chars_input = QSpinBox()
+        self.context_chars_input.setRange(4_000, 100_000)
+        self.context_chars_input.setSingleStep(1_000)
+        self.context_chars_input.setSuffix(" 字符")
         self.persona_name_input = QLineEdit()
         self.relationship_input = QLineEdit()
         self.tone_input = QLineEdit()
@@ -240,9 +247,11 @@ class MainWindow(QMainWindow):
         form.addRow("DeepSeek API Key", self.api_key_input)
         form.addRow("Base URL", self.base_url_input)
         form.addRow("模型", self.model_input)
-        form.addRow("检测间隔", self.poll_interval_input)
+        form.addRow("UIA 检测间隔", self.poll_interval_input)
         form.addRow("请求超时", self.timeout_input)
         form.addRow("最大回复长度", self.max_reply_input)
+        form.addRow("最近上下文", self.context_messages_input)
+        form.addRow("上下文字符预算", self.context_chars_input)
         form.addRow("人设称呼", self.persona_name_input)
         form.addRow("双方关系", self.relationship_input)
         form.addRow("回复语气", self.tone_input)
@@ -269,6 +278,8 @@ class MainWindow(QMainWindow):
         self.poll_interval_input.setValue(self.settings.poll_interval_ms)
         self.timeout_input.setValue(self.settings.request_timeout_seconds)
         self.max_reply_input.setValue(self.settings.max_reply_chars)
+        self.context_messages_input.setValue(self.settings.context_recent_messages)
+        self.context_chars_input.setValue(self.settings.context_char_limit)
         self.persona_name_input.setText(self.settings.persona.display_name)
         self.relationship_input.setText(self.settings.persona.relationship)
         self.tone_input.setText(self.settings.persona.tone)
@@ -300,6 +311,8 @@ class MainWindow(QMainWindow):
                 "poll_interval_ms": self.poll_interval_input.value(),
                 "request_timeout_seconds": self.timeout_input.value(),
                 "max_reply_chars": self.max_reply_input.value(),
+                "context_recent_messages": self.context_messages_input.value(),
+                "context_char_limit": self.context_chars_input.value(),
                 "reply_mode": (
                     "goutoujunshi"
                     if self.skill_enabled_checkbox.isChecked()
@@ -543,6 +556,7 @@ class MainWindow(QMainWindow):
             f"DeepSeek API Key：{'已填写' if self.api_key_input.text().strip() else '未填写'}",
             f"Base URL：{self.base_url_input.text().strip()}",
             f"模型：{self.model_input.text().strip()}",
+            "消息识别：Windows UI Automation",
             f"数据目录：{data_dir}",
             f"数据目录可写：{'是' if data_dir.exists() or data_dir.parent.exists() else '否'}",
         ]

@@ -27,11 +27,13 @@ class AppSettings(BaseModel):
     api_key: str = ""
     api_base_url: str = "https://api.deepseek.com"
     model: str = "deepseek-flash"
-    poll_interval_ms: int = Field(default=700, ge=250, le=10_000)
+    poll_interval_ms: int = Field(default=250, ge=100, le=10_000)
     request_timeout_seconds: int = Field(default=60, ge=5, le=300)
     max_reply_chars: int = Field(default=500, ge=10, le=5_000)
     max_reply_tokens: int = Field(default=300, ge=32, le=4_096)
-    context_recent_messages: int = Field(default=24, ge=4, le=200)
+    context_recent_messages: int = Field(default=200, ge=20, le=1_000)
+    context_summary_chars: int = Field(default=6_000, ge=500, le=30_000)
+    context_char_limit: int = Field(default=30_000, ge=4_000, le=100_000)
     reply_mode: Literal["standard", "goutoujunshi"] = "standard"
     skill_relationship: str = "熟悉的朋友"
     skill_style: str = "自然、简短、有分寸"

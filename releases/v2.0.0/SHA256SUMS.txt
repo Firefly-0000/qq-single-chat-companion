@@ -1,0 +1,3 @@
+cd74129738dc6e2fdd94a6aaea62a39e6a6a281e726f8321d081cefae7659b9d  qq_autoreply-2.0.0-py3-none-any.whl
+754e807844eba21aa90129c1c6bf588ee680b1b8c628d3f26c29c65edae1bfc8  qq_autoreply-2.0.0.tar.gz
+e503f996dcba7ce591c4dc6fa5c50be4609da1b7ff72e2272cdabeb8ca8b1a05  VERSION.txt

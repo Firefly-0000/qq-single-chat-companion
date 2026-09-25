@@ -252,3 +252,54 @@ def test_send_is_deferred_until_next_tick_when_user_is_active(tmp_path: Path) ->
     assert completed.message == "deferred reply sent"
     assert sender.sent == ["稍后发送"]
     assert generator.calls == 1
+
+
+def test_self_message_is_added_to_context_without_generation(tmp_path: Path) -> None:
+    orchestrator, storage, generator, _ = build_orchestrator(
+        tmp_path,
+        auto_send=True,
+        reply="不发送",
+    )
+    orchestrator.detector.result = DetectionResult(
+        kind=EventKind.SELF_TEXT,
+        event=MessageEvent(
+            event_id="self-1",
+            kind=EventKind.SELF_TEXT,
+            fingerprint="self-fp-1",
+            text="我手动发出的消息",
+            confidence=1.0,
+            captured_at=1.0,
+        ),
+    )
+
+    result = orchestrator.tick()
+
+    assert result.message == "self message recorded"
+    assert generator.calls == 0
+    assert storage.recent_messages(10)[-1].text == "我手动发出的消息"
+    assert storage.recent_messages(10)[-1].source == "uia"
+
+
+def test_uia_echo_of_generated_reply_is_not_duplicated(tmp_path: Path) -> None:
+    orchestrator, storage, _, _ = build_orchestrator(
+        tmp_path,
+        auto_send=True,
+        reply="自动回复",
+    )
+    orchestrator.tick()
+
+    orchestrator.detector.result = DetectionResult(
+        kind=EventKind.SELF_TEXT,
+        event=MessageEvent(
+            event_id="self-2",
+            kind=EventKind.SELF_TEXT,
+            fingerprint="self-fp-2",
+            text="自动回复",
+            confidence=1.0,
+            captured_at=2.0,
+        ),
+    )
+    result = orchestrator.tick()
+
+    assert result.message == "generated reply already recorded"
+    assert [message.text for message in storage.recent_messages(10)].count("自动回复") == 1

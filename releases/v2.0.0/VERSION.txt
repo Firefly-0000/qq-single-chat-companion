@@ -1,0 +1,6 @@
+QQ Auto Reply
+Release label: V2.0.0
+Detection: Windows UI Automation message controls; screenshot OCR and YOLO are not used at runtime.
+Context: incoming peer messages and outgoing self messages are recorded incrementally; defaults are 200 recent messages and a 30000-character budget.
+GUI: candidate/reason/tradeoff review and fill-only action retained.
+Fixes: UIA incremental monitoring avoids false events when older messages reappear while scrolling.

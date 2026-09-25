@@ -3,14 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..automation.input import DesktopReplySender
+from ..automation.uia_chat import UiaChatReader
 from ..config import AppSettings, project_root
 from ..deepseek import DeepSeekReplyGenerator
 from ..domain import QQWindowInfo
 from ..goutoujunshi import GoutoujunshiGenerator, SwitchableReplyGenerator
 from ..storage import Storage
-from ..vision.capture import MssCapture
-from ..vision.detector import MessageDetector, normalize_text
-from ..vision.ocr import RapidOcrEngine
+from ..text import normalize_text
+from ..vision.uia_detector import UiaMessageDetector
 from ..vision.windows import Win32WindowProvider
 
 
@@ -23,9 +23,7 @@ class Runtime:
     settings: AppSettings
     storage: Storage
     window_provider: Win32WindowProvider
-    capture: MssCapture
-    ocr: RapidOcrEngine
-    detector: MessageDetector
+    detector: UiaMessageDetector
     generator: SwitchableReplyGenerator
     sender: DesktopReplySender
 
@@ -33,12 +31,9 @@ class Runtime:
     def create(cls, settings: AppSettings) -> Runtime:
         storage = Storage(project_root() / "data" / "qq-autoreply.sqlite3")
         window_provider = Win32WindowProvider()
-        capture = MssCapture()
-        ocr = RapidOcrEngine()
-        detector = MessageDetector(
+        detector = UiaMessageDetector(
             settings=settings,
-            capture=capture,
-            ocr=ocr,
+            reader=UiaChatReader(),
             window_provider=window_provider,
         )
         standard_generator = DeepSeekReplyGenerator(settings)
@@ -51,16 +46,12 @@ class Runtime:
         sender = DesktopReplySender(
             settings=settings,
             detector=detector,
-            capture=capture,
-            ocr=ocr,
             window_provider=window_provider,
         )
         return cls(
             settings=settings,
             storage=storage,
             window_provider=window_provider,
-            capture=capture,
-            ocr=ocr,
             detector=detector,
             generator=generator,
             sender=sender,
@@ -81,7 +72,6 @@ class Runtime:
         for window in ordered:
             self.settings.target_user_name = target_name
             self.detector.bind(window)
-            self.capture.window_handle = window.handle
             validation = self.detector.validate_target()
             if validation is None:
                 previous_target = self.storage.get_state("bound_target")
