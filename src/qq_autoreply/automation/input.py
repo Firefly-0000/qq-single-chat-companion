@@ -141,12 +141,9 @@ class DesktopReplySender:
             keyboard.send_keys("^a")
             keyboard.send_keys("^v")
             time.sleep(0.2)
-
-            input_frame = self.capture.capture(self.detector.layout.input)
-            observed = normalize_text(
-                " ".join(line.text for line in self.ocr.recognize(input_frame))
-            )
-            if normalize_text(text) not in observed:
+            controls = list(window.descendants())
+            updated_input = _select_chat_input(controls)
+            if "is-empty" in str(updated_input.element_info.class_name):
                 raise InputVerificationError("Chat input verification failed")
         finally:
             try:

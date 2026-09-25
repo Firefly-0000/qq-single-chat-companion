@@ -1,0 +1,5 @@
+QQ Auto Reply
+Release label: V1.2.1
+Skills: bundled goutoujunshi skill plus repository-level .agents/skills copy.
+GUI: candidate/reason/tradeoff review and fill-only action.
+Fixes: bottom-chat input targeting, emoji/image false-text filtering, capture fallback.
